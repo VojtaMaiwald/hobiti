@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hobiti/button_painter.dart';
 import 'package:hobiti/constants.dart';
 import 'package:hobiti/cubit/game_cubit.dart';
 import 'package:hobiti/player_card.dart';
@@ -11,65 +12,70 @@ void main() {
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
-  Widget _getPointButton(BuildContext context, bool positive, int points) {
-    //TODO fix splash animation
-    return InkWell(
+  Widget _getPointButton(BuildContext context, bool positive, int points, List<bool> roundedCorners) {
+    return GestureDetector(
       onTap: () {
         context.read<GameCubit>().addPoints(points);
       },
-      child: Container(
+      child: SizedBox(
         width: Constants.pointsButtonWidth,
         height: Constants.pointsButtonHeight,
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(Constants.borderRadiusSecondary),
-          color: positive ? Constants.positiveColor : Constants.negativeColor,
-        ),
-        child: Center(
-          child: Text(
-            "${positive ? "+" : ""}$points",
-            style: const TextStyle(
-              fontSize: Constants.nameFontSize,
-              fontWeight: FontWeight.bold,
-              color: Constants.onBackgoundColor,
-            ),
+        child: CustomPaint(
+          painter: ButtonPainter(
+            positive: positive,
+            borderRadius: Constants.borderRadiusSecondary,
+            points: points,
+            roundedCorners: roundedCorners,
           ),
         ),
       ),
     );
   }
 
-  Widget _getPointButtons(BuildContext context) {
-    return Builder(builder: (context) {
-      return Padding(
-        padding: const EdgeInsets.only(
-          top: Constants.mainPadding,
-          left: Constants.mainPadding,
+  List<Widget> _getButtonsPortrait(BuildContext context) {
+    return [
+      _getPointButton(context, false, -1, [true, false, false, true]),
+      _getPointButton(context, false, -5, [false, true, true, false]),
+      Expanded(child: Container()),
+      _getPointButton(context, true, 1, [true, false, false, true]),
+      _getPointButton(context, true, 5, [false, false, false, false]),
+      _getPointButton(context, true, 10, [false, true, true, false]),
+      Expanded(child: Container()),
+      FloatingActionButton(
+        elevation: 0,
+        backgroundColor: Constants.secondaryColor,
+        onPressed: () {
+          //TODO add player
+        },
+        child: const Icon(
+          Icons.edit,
+          color: Constants.primaryColor,
         ),
-        child: Wrap(
-          verticalDirection: VerticalDirection.up,
-          direction: MediaQuery.of(context).orientation == Orientation.portrait ? Axis.horizontal : Axis.vertical,
-          children: [
-            _getPointButton(context, false, -1),
-            _getPointButton(context, false, -5),
-            _getPointButton(context, true, 1),
-            _getPointButton(context, true, 5),
-            _getPointButton(context, true, 10),
-            FloatingActionButton(
-              elevation: 0,
-              backgroundColor: Constants.secondaryColor,
-              onPressed: () {
-                //TODO add player
-              },
-              child: const Icon(
-                Icons.edit,
-                color: Constants.primaryColor,
-              ),
-            ),
-          ],
+      ),
+    ];
+  }
+
+  List<Widget> _getButtonsLandscape(BuildContext context) {
+    return [
+      FloatingActionButton(
+        elevation: 0,
+        backgroundColor: Constants.secondaryColor,
+        onPressed: () {
+          //TODO add player
+        },
+        child: const Icon(
+          Icons.edit,
+          color: Constants.primaryColor,
         ),
-      );
-    });
+      ),
+      Expanded(child: Container()),
+      _getPointButton(context, true, 10, [true, true, false, false]),
+      _getPointButton(context, true, 5, [false, false, false, false]),
+      _getPointButton(context, true, 1, [false, false, true, true]),
+      Expanded(child: Container()),
+      _getPointButton(context, false, -5, [true, true, false, false]),
+      _getPointButton(context, false, -1, [false, false, true, true]),
+    ];
   }
 
   Widget _getPlayers() {
@@ -109,16 +115,40 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+
     return BlocProvider(
       create: (context) => GameCubit(),
       child: MaterialApp(
         theme: _getTheme(),
         home: Scaffold(
           body: SafeArea(
-            child: Wrap(
+            child: Stack(
               children: [
-                _getPlayers(),
-                _getPointButtons(context),
+                Wrap(
+                  children: [
+                    _getPlayers(),
+                  ],
+                ),
+                Align(
+                  alignment: isPortrait ? Alignment.bottomCenter : Alignment.topRight,
+                  child: Container(
+                    height: isPortrait ? Constants.bottomBarPortraitHeight : MediaQuery.of(context).size.height,
+                    width: !isPortrait ? Constants.bottomBarLandscapeHeight : MediaQuery.of(context).size.width,
+                    color: Constants.bottomBarColor,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isPortrait ? Constants.mainPadding : Constants.innerPadding,
+                        vertical: isPortrait ? Constants.innerPadding : Constants.mainPadding,
+                      ),
+                      child: Builder(builder: (context) {
+                        return isPortrait
+                            ? Row(children: _getButtonsPortrait(context))
+                            : Column(children: _getButtonsLandscape(context));
+                      }),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

@@ -13,6 +13,7 @@ class Constants {
   static const Color positiveColor = Color(0xFF386A20);
   static const Color negativeColor = Color(0xFFB3261E);
   static const Color whiteColor = Color(0xFFFFFFFF);
+  static const Color bottomBarColor = Color(0xFF3F3F3F);
 
   static const double mainPadding = 16;
   static const double innerPadding = 8;
@@ -26,6 +27,9 @@ class Constants {
   static const double pointSectionWidth = 100;
   static const double pointsButtonHeight = 56;
   static const double pointsButtonWidth = 64;
+
+  static const double bottomBarPortraitHeight = 80;
+  static const double bottomBarLandscapeHeight = 96;
 
   static const int toggleAnimationDuration = 300;
 }
