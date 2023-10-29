@@ -7,9 +7,14 @@ import 'package:hobiti/constants.dart';
 import 'package:hobiti/cubit/game_cubit.dart';
 
 class PlayerCard extends StatelessWidget {
-  const PlayerCard({Key? key, required this.player}) : super(key: key);
+  const PlayerCard({
+    Key? key,
+    required this.player,
+    required this.colorScheme,
+  }) : super(key: key);
 
   final PlayerEntity player;
+  final ColorScheme colorScheme;
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +34,11 @@ class PlayerCard extends StatelessWidget {
           curve: Curves.easeInOut,
           width: min(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height) - Constants.mainPadding * 2,
           decoration: BoxDecoration(
-            color: player.selected ? Constants.primaryColor : Constants.secondaryColor,
+            color: player.selected ? colorScheme.primary : colorScheme.inversePrimary,
             shape: BoxShape.rectangle,
             borderRadius: BorderRadius.circular(Constants.borderRadius),
             border: Border.all(
-              color: player.selected ? Constants.secondaryColor : Constants.primaryColor,
+              color: player.selected ? colorScheme.inversePrimary : colorScheme.primary,
               width: Constants.borderWidth,
             ),
           ),
@@ -48,13 +53,13 @@ class PlayerCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: Constants.nameFontSize,
                       fontWeight: FontWeight.bold,
-                      color: player.selected ? Constants.backgoundColor : Constants.onBackgoundColor,
+                      color: player.selected ? colorScheme.onPrimary : colorScheme.onSurface,
                     ),
                   ),
                 ),
                 Expanded(child: Container()),
                 Container(
-                  color: player.selected ? Constants.secondaryColor : Constants.primaryColor,
+                  color: player.selected ? colorScheme.inversePrimary : colorScheme.primary,
                   width: Constants.borderWidth,
                   child: Container(),
                 ),
@@ -68,7 +73,7 @@ class PlayerCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: Constants.pointsFontSize,
                           fontWeight: FontWeight.bold,
-                          color: player.selected ? Constants.backgoundColor : Constants.onBackgoundColor,
+                          color: player.selected ? colorScheme.onPrimary : colorScheme.onSurface,
                         ),
                       ),
                     ),

@@ -5,6 +5,7 @@ class ButtonPainter extends CustomPainter {
   final bool positive;
   final double borderRadius;
   final int points;
+  final ColorScheme colorScheme;
 
   /// List of 4 values for each corner: top left, top right, bottom right, bottom left
   final List<bool> roundedCorners;
@@ -13,12 +14,13 @@ class ButtonPainter extends CustomPainter {
     required this.positive,
     required this.borderRadius,
     required this.points,
+    required this.colorScheme,
     this.roundedCorners = const [true, true, true, true],
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = positive ? Constants.positiveColor : Constants.negativeColor;
+    final paint = Paint()..color = positive ? Constants.positiveColor : colorScheme.errorContainer;
 
     final path = Path();
     path.addRRect(RRect.fromRectAndCorners(
@@ -34,10 +36,10 @@ class ButtonPainter extends CustomPainter {
     TextPainter textPainter = TextPainter(
       text: TextSpan(
         text: "${positive ? "+" : ""}$points",
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: Constants.nameFontSize,
           fontWeight: FontWeight.bold,
-          color: Constants.onBackgoundColor,
+          color: colorScheme.onSurface,
         ),
       ),
       textDirection: TextDirection.ltr,

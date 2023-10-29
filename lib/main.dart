@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hobiti/button_painter.dart';
@@ -25,6 +26,7 @@ class MainApp extends StatelessWidget {
             positive: positive,
             borderRadius: Constants.borderRadiusSecondary,
             points: points,
+            colorScheme: Theme.of(context).colorScheme,
             roundedCorners: roundedCorners,
           ),
         ),
@@ -41,33 +43,40 @@ class MainApp extends StatelessWidget {
       _getPointButton(context, true, 5, [false, false, false, false]),
       _getPointButton(context, true, 10, [false, true, true, false]),
       Expanded(child: Container()),
-      FloatingActionButton(
-        elevation: 0,
-        backgroundColor: Constants.secondaryColor,
-        onPressed: () {
-          //TODO add player
-        },
-        child: const Icon(
+      _getFAB(context),
+    ];
+  }
+
+  FloatingActionButton _getFAB(BuildContext context) {
+    return FloatingActionButton(
+      elevation: 0,
+      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      onPressed: () {
+        //TODO add player
+      },
+      child: Container(
+        height: Constants.floatingActionButtonSize,
+        width: Constants.floatingActionButtonSize,
+        decoration: BoxDecoration(
+          //color: player.selected ? colorScheme.primary : colorScheme.inversePrimary,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(Constants.borderRadiusSecondary),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary,
+            width: Constants.borderWidth,
+          ),
+        ),
+        child: Icon(
           Icons.edit,
-          color: Constants.primaryColor,
+          color: Theme.of(context).colorScheme.primary,
         ),
       ),
-    ];
+    );
   }
 
   List<Widget> _getButtonsLandscape(BuildContext context) {
     return [
-      FloatingActionButton(
-        elevation: 0,
-        backgroundColor: Constants.secondaryColor,
-        onPressed: () {
-          //TODO add player
-        },
-        child: const Icon(
-          Icons.edit,
-          color: Constants.primaryColor,
-        ),
-      ),
+      _getFAB(context),
       Expanded(child: Container()),
       _getPointButton(context, true, 10, [true, true, false, false]),
       _getPointButton(context, true, 5, [false, false, false, false]),
@@ -78,15 +87,13 @@ class MainApp extends StatelessWidget {
     ];
   }
 
-  Widget _getPlayers() {
+  Widget _getPlayers(ColorScheme colorScheme) {
     return BlocBuilder<GameCubit, GameState>(
       builder: (context, state) {
         return Wrap(
           children: state.players
               .map(
-                (player) => PlayerCard(
-                  player: player,
-                ),
+                (player) => PlayerCard(player: player, colorScheme: colorScheme),
               )
               .toList(),
         );
@@ -94,23 +101,8 @@ class MainApp extends StatelessWidget {
     );
   }
 
-  ThemeData _getTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: const ColorScheme(
-        background: Constants.backgoundColor,
-        primary: Constants.primaryColor,
-        secondary: Constants.secondaryColor,
-        onPrimary: Constants.onPrimaryColor,
-        onSecondary: Constants.onSecondaryColor,
-        onBackground: Constants.onBackgoundColor,
-        error: Constants.errorColor,
-        onError: Constants.onErrorColor,
-        brightness: Brightness.dark,
-        surface: Constants.backgoundColor,
-        onSurface: Constants.onBackgoundColor,
-      ),
-    );
+  ThemeData _getTheme(ColorScheme? darkDynamic) {
+    return ThemeData(useMaterial3: true, colorScheme: darkDynamic);
   }
 
   @override
@@ -119,40 +111,48 @@ class MainApp extends StatelessWidget {
 
     return BlocProvider(
       create: (context) => GameCubit(),
-      child: MaterialApp(
-        theme: _getTheme(),
-        home: Scaffold(
-          body: SafeArea(
-            child: Stack(
-              children: [
-                Wrap(
+      child: DynamicColorBuilder(
+        builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+          return MaterialApp(
+            theme: _getTheme(darkDynamic),
+            home: Scaffold(
+              body: SafeArea(
+                child: Stack(
                   children: [
-                    _getPlayers(),
+                    Wrap(
+                      children: [
+                        Builder(
+                          builder: (context) {
+                            return _getPlayers(Theme.of(context).colorScheme);
+                          },
+                        ),
+                      ],
+                    ),
+                    Align(
+                      alignment: isPortrait ? Alignment.bottomCenter : Alignment.topRight,
+                      child: Container(
+                        height: isPortrait ? Constants.bottomBarPortraitHeight : MediaQuery.of(context).size.height,
+                        width: !isPortrait ? Constants.bottomBarLandscapeHeight : MediaQuery.of(context).size.width,
+                        color: darkDynamic?.onInverseSurface ?? Constants.bottomBarColor,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isPortrait ? Constants.mainPadding : Constants.innerPadding,
+                            vertical: isPortrait ? Constants.innerPadding : Constants.mainPadding,
+                          ),
+                          child: Builder(builder: (context) {
+                            return isPortrait
+                                ? Row(children: _getButtonsPortrait(context))
+                                : Column(children: _getButtonsLandscape(context));
+                          }),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                Align(
-                  alignment: isPortrait ? Alignment.bottomCenter : Alignment.topRight,
-                  child: Container(
-                    height: isPortrait ? Constants.bottomBarPortraitHeight : MediaQuery.of(context).size.height,
-                    width: !isPortrait ? Constants.bottomBarLandscapeHeight : MediaQuery.of(context).size.width,
-                    color: Constants.bottomBarColor,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isPortrait ? Constants.mainPadding : Constants.innerPadding,
-                        vertical: isPortrait ? Constants.innerPadding : Constants.mainPadding,
-                      ),
-                      child: Builder(builder: (context) {
-                        return isPortrait
-                            ? Row(children: _getButtonsPortrait(context))
-                            : Column(children: _getButtonsLandscape(context));
-                      }),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
