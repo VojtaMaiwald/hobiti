@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hobiti/Entities/player_entity.dart';
+import 'package:hobiti/entities/player_entity.dart';
 import 'package:hobiti/constants.dart';
 import 'package:hobiti/cubit/game_cubit.dart';
 

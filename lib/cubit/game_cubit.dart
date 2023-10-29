@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hobiti/Entities/player_entity.dart';
+import 'package:hobiti/entities/player_entity.dart';
 
 part 'game_state.dart';
 

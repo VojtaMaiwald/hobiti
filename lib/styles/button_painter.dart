@@ -20,7 +20,9 @@ class ButtonPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = positive ? Constants.positiveColor : colorScheme.errorContainer;
+    final paint = Paint()
+      ..color = positive ? Constants.positiveColor.withOpacity(0.7) : colorScheme.errorContainer.withOpacity(0.7)
+      ..style = PaintingStyle.fill;
 
     final path = Path();
     path.addRRect(RRect.fromRectAndCorners(
@@ -51,6 +53,6 @@ class ButtonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
+    return true;
   }
 }

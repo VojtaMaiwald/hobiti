@@ -1,10 +1,11 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hobiti/button_painter.dart';
 import 'package:hobiti/constants.dart';
 import 'package:hobiti/cubit/game_cubit.dart';
 import 'package:hobiti/player_card.dart';
+import 'package:hobiti/styles/button_border.dart';
+import 'package:hobiti/styles/button_painter.dart';
 
 void main() {
   runApp(const MainApp());
@@ -14,23 +15,38 @@ class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   Widget _getPointButton(BuildContext context, bool positive, int points, List<bool> roundedCorners) {
-    return GestureDetector(
-      onTap: () {
-        context.read<GameCubit>().addPoints(points);
-      },
-      child: SizedBox(
-        width: Constants.pointsButtonWidth,
-        height: Constants.pointsButtonHeight,
-        child: CustomPaint(
-          painter: ButtonPainter(
+    return Stack(
+      children: [
+        RawMaterialButton(
+          constraints: const BoxConstraints(
+            maxWidth: Constants.pointsButtonWidth,
+            maxHeight: Constants.pointsButtonHeight,
+          ),
+          shape: ButtonBorder(
             positive: positive,
             borderRadius: Constants.borderRadiusSecondary,
             points: points,
             colorScheme: Theme.of(context).colorScheme,
             roundedCorners: roundedCorners,
           ),
+          onPressed: () {
+            context.read<GameCubit>().addPoints(points);
+          },
+          child: SizedBox(
+            width: Constants.pointsButtonWidth,
+            height: Constants.pointsButtonHeight,
+            child: CustomPaint(
+              painter: ButtonPainter(
+                positive: positive,
+                borderRadius: Constants.borderRadiusSecondary,
+                points: points,
+                colorScheme: Theme.of(context).colorScheme,
+                roundedCorners: roundedCorners,
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -58,7 +74,6 @@ class MainApp extends StatelessWidget {
         height: Constants.floatingActionButtonSize,
         width: Constants.floatingActionButtonSize,
         decoration: BoxDecoration(
-          //color: player.selected ? colorScheme.primary : colorScheme.inversePrimary,
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(Constants.borderRadiusSecondary),
           border: Border.all(
