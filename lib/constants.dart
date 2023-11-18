@@ -28,6 +28,7 @@ class Constants {
   static const double pointsButtonHeight = 56;
   static const double pointsButtonWidth = 64;
   static const double floatingActionButtonSize = 56;
+  static const double addButtonSize = 64;
 
   static const double bottomBarPortraitHeight = 80;
   static const double bottomBarLandscapeHeight = 96;

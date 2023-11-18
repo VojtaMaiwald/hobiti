@@ -8,11 +8,11 @@ import 'package:hobiti/styles/button_border.dart';
 import 'package:hobiti/styles/button_painter.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const HobitiApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class HobitiApp extends StatelessWidget {
+  const HobitiApp({super.key});
 
   Widget _getPointButton(BuildContext context, bool positive, int points, List<bool> roundedCorners) {
     return Stack(
@@ -68,7 +68,7 @@ class MainApp extends StatelessWidget {
       elevation: 0,
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       onPressed: () {
-        //TODO add player
+        _showAddDialog(context);
       },
       child: Container(
         height: Constants.floatingActionButtonSize,
@@ -83,10 +83,128 @@ class MainApp extends StatelessWidget {
         ),
         child: Icon(
           Icons.edit,
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
+  }
+
+  Future<dynamic> _showAddDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Edit players",
+                style: TextStyle(
+                  fontSize: Constants.nameFontSize,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.read<GameCubit>().controller.clear();
+                },
+                child: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Add player",
+                  style: TextStyle(fontSize: Constants.nameFontSize),
+                ),
+                const SizedBox(height: Constants.mainPadding),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 2,
+                      child: TextField(
+                        controller: context.read<GameCubit>().controller,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Player name",
+                        ),
+                        onChanged: (value) {
+                          context.read<GameCubit>().setTempPlayerName(value);
+                        },
+                        keyboardType: TextInputType.name,
+                        textCapitalization: TextCapitalization.words,
+                        onSubmitted: (value) {
+                          context.read<GameCubit>().addPlayer();
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: Constants.mainPadding),
+                      child: FloatingActionButton(
+                        elevation: 0,
+                        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                        onPressed: () {
+                          context.read<GameCubit>().addPlayer();
+                        },
+                        child: Container(
+                          height: Constants.addButtonSize,
+                          width: Constants.addButtonSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(Constants.borderRadiusSecondary),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: Constants.borderWidth,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Constants.mainPadding),
+                const Text(
+                  "Players",
+                  style: TextStyle(
+                    fontSize: Constants.nameFontSize,
+                  ),
+                ),
+                BlocBuilder<GameCubit, GameState>(
+                  builder: (context, state) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: state.players
+                          .map(
+                            (player) => Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(player.name),
+                                IconButton(
+                                  onPressed: () {
+                                    context.read<GameCubit>().removePlayer(player.id);
+                                  },
+                                  icon: const Icon(Icons.delete_outline, color: Constants.errorColor),
+                                ),
+                              ],
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).whenComplete(() => context.read<GameCubit>().controller.clear());
   }
 
   List<Widget> _getButtonsLandscape(BuildContext context) {
@@ -120,6 +238,45 @@ class MainApp extends StatelessWidget {
     return ThemeData(useMaterial3: true, colorScheme: darkDynamic);
   }
 
+  Scaffold _getHomePage(bool isPortrait, BuildContext context, ColorScheme? darkDynamic) {
+    return Scaffold(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Wrap(
+              children: [
+                Builder(
+                  builder: (context) {
+                    return _getPlayers(Theme.of(context).colorScheme);
+                  },
+                ),
+              ],
+            ),
+            Align(
+              alignment: isPortrait ? Alignment.bottomCenter : Alignment.topRight,
+              child: Container(
+                height: isPortrait ? Constants.bottomBarPortraitHeight : MediaQuery.of(context).size.height,
+                width: !isPortrait ? Constants.bottomBarLandscapeHeight : MediaQuery.of(context).size.width,
+                color: darkDynamic?.onInverseSurface ?? Constants.bottomBarColor,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isPortrait ? Constants.mainPadding : Constants.innerPadding,
+                    vertical: isPortrait ? Constants.innerPadding : Constants.mainPadding,
+                  ),
+                  child: Builder(builder: (context) {
+                    return isPortrait
+                        ? Row(children: _getButtonsPortrait(context))
+                        : Column(children: _getButtonsLandscape(context));
+                  }),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
@@ -130,42 +287,7 @@ class MainApp extends StatelessWidget {
         builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
           return MaterialApp(
             theme: _getTheme(darkDynamic),
-            home: Scaffold(
-              body: SafeArea(
-                child: Stack(
-                  children: [
-                    Wrap(
-                      children: [
-                        Builder(
-                          builder: (context) {
-                            return _getPlayers(Theme.of(context).colorScheme);
-                          },
-                        ),
-                      ],
-                    ),
-                    Align(
-                      alignment: isPortrait ? Alignment.bottomCenter : Alignment.topRight,
-                      child: Container(
-                        height: isPortrait ? Constants.bottomBarPortraitHeight : MediaQuery.of(context).size.height,
-                        width: !isPortrait ? Constants.bottomBarLandscapeHeight : MediaQuery.of(context).size.width,
-                        color: darkDynamic?.onInverseSurface ?? Constants.bottomBarColor,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isPortrait ? Constants.mainPadding : Constants.innerPadding,
-                            vertical: isPortrait ? Constants.innerPadding : Constants.mainPadding,
-                          ),
-                          child: Builder(builder: (context) {
-                            return isPortrait
-                                ? Row(children: _getButtonsPortrait(context))
-                                : Column(children: _getButtonsLandscape(context));
-                          }),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            home: _getHomePage(isPortrait, context, darkDynamic),
           );
         },
       ),
